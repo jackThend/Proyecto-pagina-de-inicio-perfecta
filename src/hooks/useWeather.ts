@@ -51,27 +51,44 @@ export const useWeather = () => {
 
     const fetchWeather = async (latitude: number, longitude: number) => {
       try {
-        const res = await fetch(
+        // 1. Fetch Weather Data
+        const weatherRes = await fetch(
           `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,is_day,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto`
         );
-        const data = await res.json();
+        const weatherData = await weatherRes.json();
         
+        // 2. Fetch Location Name (Reverse Geocoding)
+        let cityName = "Ubicación desconocida";
+        try {
+          // Using BigDataCloud API (Free, no key, CORS friendly)
+          const geoRes = await fetch(
+            `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=es`
+          );
+          const geoData = await geoRes.json();
+          // Prefer locality (City/Town) or city, then countryName
+          cityName = geoData.locality || geoData.city || geoData.principalSubdivision || "Ubicación actual";
+        } catch (e) {
+          console.warn("Geocoding failed", e);
+          cityName = "Ubicación actual";
+        }
+
         // Map daily data
-        const dailyData: DailyForecast[] = data.daily.time.slice(0, 3).map((time: string, index: number) => ({
+        const dailyData: DailyForecast[] = weatherData.daily.time.slice(0, 3).map((time: string, index: number) => ({
           date: time,
-          code: data.daily.weather_code[index],
-          max: data.daily.temperature_2m_max[index],
-          min: data.daily.temperature_2m_min[index]
+          code: weatherData.daily.weather_code[index],
+          max: weatherData.daily.temperature_2m_max[index],
+          min: weatherData.daily.temperature_2m_min[index]
         }));
 
         setWeather({
           current: {
-            temperature: data.current.temperature_2m,
-            weatherCode: data.current.weather_code,
-            isDay: data.current.is_day === 1
+            temperature: weatherData.current.temperature_2m,
+            weatherCode: weatherData.current.weather_code,
+            isDay: weatherData.current.is_day === 1
           },
           daily: dailyData
         });
+        setLocationName(cityName);
         setLoading(false);
       } catch (error) {
         console.error("Error fetching weather:", error);
@@ -84,7 +101,6 @@ export const useWeather = () => {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           fetchWeather(position.coords.latitude, position.coords.longitude);
-          setLocationName("Ubicación actual"); 
         },
         () => {
           fetchWeather(lat, lon); 

@@ -5,7 +5,11 @@ import { cn } from '../../lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export const TaskManager: React.FC = () => {
-  const { tasks, addTask, toggleTask, deleteTask } = useAppStore();
+  const tasks = useAppStore(state => state.tasks);
+  const addTask = useAppStore(state => state.addTask);
+  const toggleTask = useAppStore(state => state.toggleTask);
+  const deleteTask = useAppStore(state => state.deleteTask);
+  
   const [newTask, setNewTask] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {

@@ -1,5 +1,5 @@
 // Service to handle Steam Wishlist fetching via Proxy
-const CORS_PROXY = 'https://api.allorigins.win/get?url=';
+// Using corsproxy.io as it handles Steam's JSON response better than allorigins
 
 export interface SteamGame {
   name: string;
@@ -33,15 +33,31 @@ export const fetchSteamWishlist = async (steamId: string): Promise<SteamGame[]> 
   try {
     // Steam Wishlist JSON endpoint (Public)
     // Format: https://store.steampowered.com/wishlist/profiles/{steamID}/wishlistdata/
-    const targetUrl = encodeURIComponent(`https://store.steampowered.com/wishlist/profiles/${steamId}/wishlistdata/?p=0`);
-    const response = await fetch(`${CORS_PROXY}${targetUrl}`);
-    const data = await response.json();
+    const targetUrl = `https://store.steampowered.com/wishlist/profiles/${steamId}/wishlistdata/?p=0`;
     
-    // The API returns contents as a string inside the proxy wrapper
-    const parsedContents = JSON.parse(data.contents);
+    // Fallback to allorigins as corsproxy.io is getting blocked (403)
+    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}&timestamp=${Date.now()}`;
+    
+    const response = await fetch(proxyUrl);
+    
+    if (!response.ok) {
+      throw new Error(`Proxy responded with ${response.status}`);
+    }
 
+    const proxyData = await response.json();
+    const data = JSON.parse(proxyData.contents);
+    
     // Steam returns an object where keys are AppIDs, we want an array
-    const gamesArray = Object.values(parsedContents) as SteamGame[];
+    // If wishlist is empty or private, data might be [] or have a success:2 error
+    if (Array.isArray(data)) {
+        return []; // Empty wishlist
+    }
+
+    if (data.success === 2) {
+        throw new Error('Profile private or invalid');
+    }
+
+    const gamesArray = Object.values(data) as SteamGame[];
     
     // Sort by discount (highest first)
     return gamesArray.sort((a, b) => {
