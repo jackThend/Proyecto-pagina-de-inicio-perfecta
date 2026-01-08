@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAppStore } from '../../store/useStore';
-import { Plus, X, Globe, Trash2 } from 'lucide-react';
+import { Plus, X, Globe } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export const QuickLinks: React.FC = () => {

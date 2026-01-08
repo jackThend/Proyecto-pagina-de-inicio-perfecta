@@ -7,7 +7,7 @@ import { ExternalLink, RefreshCw, Rss } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 // Small sub-component for each article to handle its own image error state
-const FeedArticle: React.FC<{ item: FeedItem, idx: number }> = ({ item, idx }) => {
+const FeedArticle: React.FC<{ item: FeedItem }> = ({ item }) => {
   const [imageVisible, setImageVisible] = useState(!!item.image);
 
   return (
@@ -170,7 +170,7 @@ export const FeedReader: React.FC = () => {
         ) : (
           <div className="columns-1 md:columns-2 gap-4 pb-4">
             {items.slice(0, visibleCount).map((item, idx) => (
-              <FeedArticle key={`${item.link}-${idx}`} item={item} idx={idx} />
+              <FeedArticle key={`${item.link}-${idx}`} item={item} />
             ))}
             
             {!loading && items.length === 0 && (

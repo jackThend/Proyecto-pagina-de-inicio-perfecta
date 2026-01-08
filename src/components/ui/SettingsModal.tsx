@@ -1,23 +1,22 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useAppStore } from '../../store/useStore';
-import { X, Plus, Trash2, Image as ImageIcon, Rss, Download, Upload, Save, CheckCircle, AlertTriangle, Search, Info, HelpCircle } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { X, Plus, Trash2, Image as ImageIcon, Rss, Download, Upload, Save, Search, HelpCircle } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export const SettingsModal: React.FC = () => {
   const { 
     isSettingsOpen, toggleSettings, 
-    backgrounds, addBackground, removeBackground, activeBackground, setActiveBackground,
+    backgrounds, addBackground, removeBackground, activeBackground,
     isTransparentMode, toggleTransparentMode,
     feeds, addFeed, removeFeed,
-    steamId, setSteamId,
-    calendarUrl, setCalendarUrl,
     importData,
     tasks, events, links,
-    searchProviders, addSearchProvider, removeSearchProvider, activeSearchProviderId
+    searchProviders, addSearchProvider, removeSearchProvider, activeSearchProviderId,
+    steamId: _steamId,
+    calendarUrl: _calendarUrl
   } = useAppStore();
 
   const [activeTab, setActiveTab] = useState<'general' | 'integrations' | 'feeds' | 'search' | 'data' | 'help'>('general');
-  const [saveStatus, setSaveStatus] = useState<'idle' | 'saved'>('idle');
   const [newFeedUrl, setNewFeedUrl] = useState('');
   const [newFeedName, setNewFeedName] = useState('');
   const [newFeedCategory, setNewFeedCategory] = useState<'news' | 'opportunities'>('news');
@@ -25,9 +24,6 @@ export const SettingsModal: React.FC = () => {
   
   const [newSearchName, setNewSearchName] = useState('');
   const [newSearchUrl, setNewSearchUrl] = useState('');
-
-  const [steamIdInput, setSteamIdInput] = useState(steamId || '');
-  const [calendarUrlInput, setCalendarUrlInput] = useState(calendarUrl || '');
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -35,7 +31,6 @@ export const SettingsModal: React.FC = () => {
   useEffect(() => {
     if (isSettingsOpen) {
       setActiveTab('general');
-      setSaveStatus('idle');
     }
   }, [isSettingsOpen]);
 
@@ -66,13 +61,6 @@ export const SettingsModal: React.FC = () => {
     }
   };
 
-  const handleSaveIntegrations = () => {
-    setSteamId(steamIdInput);
-    setCalendarUrl(calendarUrlInput);
-    setSaveStatus('saved');
-    setTimeout(() => setSaveStatus('idle'), 3000);
-  };
-
   const handleExport = () => {
     const data = {
       backgrounds,
@@ -82,8 +70,8 @@ export const SettingsModal: React.FC = () => {
       feeds,
       events,
       links,
-      steamId,
-      calendarUrl,
+      steamId: _steamId,
+      calendarUrl: _calendarUrl,
       exportedAt: new Date().toISOString()
     };
     

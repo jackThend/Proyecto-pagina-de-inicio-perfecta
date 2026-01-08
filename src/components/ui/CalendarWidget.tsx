@@ -158,6 +158,7 @@ export const CalendarWidget: React.FC = () => {
   // Check if day is inside a range (Period)
   const isDayInEventRange = (day: Date) => {
     return allEvents.find(e => {
+      if (e.type === 'holiday') return false;
       if (!e.endDate) return false;
       const start = startOfDay(parseISO(e.date));
       const end = startOfDay(parseISO(e.endDate));
@@ -327,7 +328,7 @@ export const CalendarWidget: React.FC = () => {
                      {e.type === 'google' && <><span className="w-1.5 h-1.5 rounded-full bg-blue-400"/> Google Calendar</>}
                      {e.type === 'personal' && 'Personal'}
                      {/* Show duration if multi-day */}
-                     {e.endDate && (
+                     {e.type !== 'holiday' && e.endDate && (
                        <span className="text-amber-400 ml-1 font-bold">
                          ➜ {format(parseISO(e.endDate), 'd MMM', { locale: es })}
                        </span>

@@ -3,7 +3,7 @@ import { Search, Settings, Cloud, Gamepad2, ChevronDown, Loader2, Star, Sun, Clo
 import { useAppStore } from '../../store/useStore';
 import { format, addDays } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { useWeather, getWeatherDescription } from '../../hooks/useWeather';
+import { useWeather } from '../../hooks/useWeather';
 import { useGameDeals } from '../../hooks/useGameDeals';
 import { fetchSteamWishlist, SteamGame } from '../../lib/steam';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -38,8 +38,7 @@ export const Header: React.FC = () => {
   const [showQuickLinks, setShowQuickLinks] = useState(false);
   
   const [wishlist, setWishlist] = useState<SteamGame[]>([]);
-  const [loadingWishlist, setLoadingWishlist] = useState(false);
-  const [activeDealsTab, setActiveDealsTab] = useState<'free' | 'wishlist'>('free');
+  const [_loadingWishlist, setLoadingWishlist] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000);
@@ -47,13 +46,13 @@ export const Header: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (steamId && showDeals && activeDealsTab === 'wishlist' && wishlist.length === 0) {
+    if (steamId && showDeals && wishlist.length === 0) {
       setLoadingWishlist(true);
       fetchSteamWishlist(steamId)
         .then(setWishlist)
         .finally(() => setLoadingWishlist(false));
     }
-  }, [steamId, showDeals, activeDealsTab]);
+  }, [steamId, showDeals]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
